@@ -1,0 +1,121 @@
+body{
+	background-color: green;
+	z-index: -1;
+}
+header{
+	background-image: url("/MasterFace/pictures/masterLogo.ico");
+}
+div#into{
+	margin: 0em 0em 0em 0em;
+	position: fixed;
+	background-color: #35ca41;
+	width: 100%;
+	height: 4em;
+}
+div#footer{
+	margin: 0.8em 0em 0em 0em;
+	position: fixed;
+	background-color: #35ca41;
+	width: 100%;
+	height: 4em;
+	z-index: -1;
+}
+a{
+	text-decoration: none;
+	background-color: white;
+	padding: 1em 1em 1em 1em;
+	margin: 0.4em 0.4em 0em 0.2em;
+	font-weight: bold;
+	border: black ridge;
+	text-indent: 0.2;
+}
+p{
+	text-align: center;
+	font-weight: bold;
+	font-family: cursive;
+	animation: colors 6s linear 1s infinite alternate;
+}
+div#text{
+	font-family: monospace;
+	font-size: x-large;
+	animation: textMove 10s linear 0s infinite;
+	text-indent: 0.1em;
+}
+div#into a{
+	float: right;
+}
+div#into a:HOVER{
+	background-color: fuchsia;
+}
+a[href="sql"]{
+	border: none;
+	margin-top: 32em;
+	background-color: inherit;
+	float: left;
+	color: green;
+	z-index: 1;
+}
+a[href="sql"]:HOVER{
+	background-color: black;
+}
+h1{
+	font-family: serif;
+	text-align: center;
+	margin-top: 0.3em;
+	color: white;
+	z-index: 1;
+	
+}
+img#scream {
+	display: inline;
+	margin: 5em 0em 0.5em 20em;
+	opacity: 0.4;
+	background: inherit;
+	text-align: center;
+	animation: scrollView 6s infinite alternate;
+	width: 600px;
+	height: 400px;
+	border: double black;
+	
+}
+img#scream:hover{
+	opacity: 1;
+	
+}
+/* Standard syntax */
+@keyframes textMove {
+	0% {transform: translateX(-21em);}
+	100% {transform: translateX(60em);}
+}
+@keyframes colors {
+	0%   {color: red;}
+   	25%  {color: yellow;}
+   	50%  {color: blue;}
+   	75%  {color: green;}
+   	100% {color: red;}
+}
+@keyframes scrollView {
+	0%{
+		transform: rotateY(-35deg);
+	}
+	25%  {
+		transform: rotateY(-70deg);
+	}
+	50%  {
+		transform: rotateY(-105deg);
+	}
+	75%  {
+		transform: rotateY(-140deg);
+	}
+	100% {
+		transform: rotateY(-175deg);
+	}
+}
+canvas {
+	position: absolute;
+	margin: 0em 0em 0em 0em;
+	background-color: #000000;
+	animation: colors 4s;
+	animation: mymove 6s linear 1s infinite alternate;
+	display: none;
+}

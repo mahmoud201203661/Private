@@ -1,0 +1,86 @@
+body{
+	background-color: #1234a0;
+}
+video{
+	width: 450px;
+	height: 300px;
+	opacity: 0.7;
+	margin: 0.2em;
+	border-radius: 1.0em;
+	border: solid black;
+	
+}
+button{
+	margin-left: 0.0em;
+	width: 50px;
+}
+p[id ^= "time"]{
+	padding: 0.2em 0.2em 0.2em 0.2em;
+	background-color: black;
+	color: white;
+	margin: 0em 0em 0em 0em;
+	border-radius: 0.3em;
+}
+video[id ^= "back"]{
+	position: fixed;
+	z-index: -1;
+	width: 100%;
+	height: 100%;
+	opacity: 1;
+	float: left;
+	left: 0px;
+	top: 0px;
+	border: none;
+}
+ul[id ^= "videoBlock"]{ 
+	float: left;
+	margin: 0em 0em 0em 0em;
+	border: none;
+	width: 450px;
+	height: 300px;
+	display: none;
+	list-style: none;
+}
+ul[id ^= "videoBlock"] li { 
+	float: left;
+	
+}
+div[id ^="controls"]{
+	background-color: #248751;
+	padding: 0.1em 0.0em 1.7em 0.0em;
+	border-radius: 0.5em;
+	text-indent: 0.2em;
+	text-align: center;
+	width: 475px;
+}
+div[id ^= "progressBar"]{
+	width: 300px;
+	height: 25px;
+	background-color: lightblue;
+	border-radius: 0.5em;
+}
+div[id ^= "progress"]{
+	max-width: 300px;
+	min-width: 0px;
+	border-radius: 0.5em;
+}
+div[id ^= "volumeBar"]{
+	width: 20px;
+	height: 200px;
+	background-color: lightblue;
+	display: none;
+	border-radius: 0.5em;
+
+}
+div[id ^= "volume"]{
+	max-height: 200px;
+	min-height: 0px;
+	width: 20px;
+	border-radius: 0.5em;
+}
+i[class ^= "fa"]:hover{
+	color: red;
+}
+i[class ^= "fa"]{
+	font-size: 30px;
+}

@@ -1,0 +1,283 @@
+package com;
+
+
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+/**
+ *
+ * @author Mahmoud Mohamed
+ */
+public class ReservationControl {
+    private boolean isDone;
+    public void setDone(boolean isDone){
+        this.isDone = isDone;
+    }
+    public boolean getDone(){
+        return isDone;
+    }
+    public static String getNewSpot(){
+        return "";
+    }
+    /**
+     *
+     * @param startDate
+     * @param endDate
+     * @return ArrayList
+     */
+    public ArrayList<String> getFreeSpots(Date startDate , Date endDate)throws Exception{
+        //System.out.print(startDate +"\n"+ endDate+"\n");
+        Class.forName("com.mysql.jdbc.Driver");
+	Connection con = DriverManager.getConnection("jdbc:mysql://localhost/GarageSystem","root","");
+        String sql = "select SpotID from Spots where !(SpotID like '%_A')";
+        PreparedStatement st = con.prepareStatement(sql);
+        ResultSet Result  = st.executeQuery();
+        ArrayList<String>freeSpots = new ArrayList<String>();
+        boolean check = true ;
+        int counter = 0;
+        while(Result.next()){
+            String spotID = Result.getString("SpotID");
+            System.out.print(spotID+"\n");
+            sql = "select StartDate,EndDate from Reservation where SpotID  = '"+spotID+"'";
+            st = con.prepareStatement(sql);
+            ResultSet Result1 = st.executeQuery();
+            
+            while(Result1.next()){
+                counter++;
+                SimpleDateFormat f = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                Date sdate = f.parse(Result1.getString("StartDate"));
+                Date edate = f.parse(Result1.getString("EndDate"));
+                int diffss = (int)TimeUnit.MILLISECONDS.toDays(sdate.getTime()-startDate.getTime());
+                int diffse = (int)TimeUnit.MILLISECONDS.toDays(sdate.getTime()-endDate.getTime());
+                int diffee = (int)TimeUnit.MILLISECONDS.toDays(edate.getTime()-startDate.getTime());
+                int diffes = (int)TimeUnit.MILLISECONDS.toDays(edate.getTime()-endDate.getTime());
+                if(!((diffss>0 && diffse>=0)||(diffee<0 && diffes<=0))){
+                   check = false ;
+                   break ;
+                }
+            }
+            if(check){
+                freeSpots.add(spotID);
+            }
+            if(counter==0){
+                freeSpots.add(spotID);
+            }
+            
+
+        }
+        return freeSpots;
+    }
+    /**
+     *
+     * @param r
+     * @param c
+     * @param s
+     */
+    public void addReservation(Reservation r, Car c, Spot s)throws Exception{
+        Class.forName("com.mysql.jdbc.Driver");
+	Connection con = DriverManager.getConnection("jdbc:mysql://localhost/GarageSystem","root",""); 
+	PreparedStatement st = con.prepareStatement("select ResID from Reservation");
+        ResultSet Result = st.executeQuery();
+        
+        Date date = new Date();
+        if(r.getStartDate().before(r.getEndDate())){
+            if(r.getStartDate().after(date)||r.getStartDate().equals(date)){
+                r.setResID();
+                double price = ManagerControl.getPriceOfSpot(r.getDaily());
+                r.setProfit(price,r.getDaily());
+                
+                String startDate = String.format("%s/%s/%s %s:%s:%s",r.getStartDate().getYear()+1900 , r.getStartDate().getMonth()+1, r.getStartDate().getDate() , r.getStartDate().getHours() ,r.getStartDate().getMinutes() ,r.getStartDate().getSeconds());
+                String endDate = String.format("%s/%s/%s %s:%s:%s",r.getEndDate().getYear()+1900, r.getEndDate().getMonth()+1 , r.getEndDate().getDate() , r.getEndDate().getHours() ,r.getEndDate().getMinutes() ,r.getEndDate().getSeconds());
+                String sql = "insert into Reservation(ResID , StartDate ,EndDate , Profit , isDaily , SpotID,PN) values(?,?,?,?,?,?,?)";
+                //System.out.print(startDate+"\n"+endDate+"\n");
+                st = con.prepareStatement(sql);
+                st.setInt(1, r.getResID());
+                st.setString(2, startDate);
+                st.setString(3, endDate);
+                st.setDouble(4, r.getProfit());
+                st.setBoolean(5, r.getDaily());
+                st.setString(6, s.getSpotID());
+                st.setString(7, c.getPlateNumber());
+                st.execute();
+//                sql = "insert into Cars(PN , isParken)values(?,?)";
+//                st = con.prepareStatement(sql);
+//                st.setString(1, c.getPlateNumber());
+//                st.setBoolean(2, false);
+//                st.execute(); 
+                setDone(true);
+            }else{
+                setDone(false);
+            }
+        }
+        else{
+            setDone(false);
+        }
+    }
+
+    /**
+     *
+     * @param Time
+     * @param resID
+     */
+    public void extendReservation(Date date, int resID)throws Exception{
+        String ID = String.format("%s", resID);
+        String endDate = String.format("%s/%s/%s %s:%s:%s",date.getYear() , date.getMonth() , date.getDay() , date.getHours() ,date.getMinutes() ,date.getSeconds());
+        Class.forName("com.mysql.jdbc.Driver");
+	Connection con = DriverManager.getConnection("jdbc:mysql://localhost/GarageSystem","root","");
+        
+        PreparedStatement st = con.prepareStatement("select StartDate from Reservation ResID = '"+ID+"'");
+        ResultSet Result = st.executeQuery();
+        
+        SimpleDateFormat f = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        String startDate = Result.getString("StartDate");
+        Date sdate = f.parse(startDate);
+        Reservation r = new Reservation(resID, sdate, date , true);
+        double price = ManagerControl.getPriceOfSpot(true);
+        r.setProfit(price, true);
+        if(getFreeSpots(sdate , date).size()>=1){
+            String spotID = getFreeSpots(sdate , date).get(0);
+            st = con.prepareStatement("update Reservation set EndDate = ?,Profit = ? ,SpotID = ? where ResID = ?");
+            st.setString(1, endDate);
+            st.setDouble(2, r.getProfit());
+            st.setString(3, spotID);
+            st.setInt(4, resID);
+            setDone(true);
+        }else{
+            setDone(false);
+        }
+//        String sql = "select StartDate from Reservation where SpotID in(select SpotID from Reservation where ResID = '"+ID+"')";
+//	PreparedStatement st = con.prepareStatement(sql);
+//        ResultSet Result = st.executeQuery();
+//        SimpleDateFormat f = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+//        Date startDate  = new Date();
+//        boolean conflict= true ;
+//        while(Result.next()){
+//            startDate=f.parse(Result.getString("SpotID"));
+//            if(startDate.after(date)){
+//                conflict = false ;
+//            }
+//        }
+//        Date today = new Date();
+//        double price = ManagerControl.getPriceOfSpot(true);
+//        Reservation r = new Reservation(resID, today, date, price, true);
+//        r.setProfit(price, true);
+//        if(!conflict){
+//            st = con.prepareStatement("update Reservation set EndDate = ?,Profit = ? where ResID = ?");
+//            st.setString(1, endDate);
+//            st.setDouble(2, r.getProfit());
+//            st.setInt(3, resID);
+//            setDone(true);
+//            
+//        }else{
+//            String date1 = String.format("%s/%s/%s %s:%s:%s",today.getYear() , today.getMonth() , today.getDay() , today.getHours() ,today.getMinutes() ,today.getSeconds());
+//            
+//            if(getFreeSpots(today , date).size()>=1){
+//                String spotID = getFreeSpots(today , date).get(0);
+//                st = con.prepareStatement("update Reservation set startDate = ?,EndDate = ?,Profit = ? ,SpotID = ? where ResID = ?");
+//                st.setString(1, date1);
+//                st.setString(2, endDate);
+//                st.setDouble(3, r.getProfit());
+//                st.setString(4, spotID);
+//                st.setInt(5, resID);
+//                setDone(true);
+//            }
+//            else {
+//                setDone(false);
+//            }
+//            
+//        }
+    }
+
+    /**
+     *
+     * @param resID
+     * @return boolean
+     */
+    public boolean canModifyRes(int resID)throws Exception{
+        String ID = String.format("%s", resID);
+        Class.forName("com.mysql.jdbc.Driver");
+	Connection con = DriverManager.getConnection("jdbc:mysql://localhost/GarageSystem","root","");
+        String sql = "select StartDate from Reservation where ResID = '"+ID+"'";
+	PreparedStatement st = con.prepareStatement(sql);
+        ResultSet Result = st.executeQuery();
+        Date date = new Date();
+        SimpleDateFormat f = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date startDate = f.parse(Result.getString("StartDate"));
+        int diff = (int)TimeUnit.MILLISECONDS.toMinutes(startDate.getTime()-date.getTime());
+        if(diff>30){
+            return false ;
+        }else{
+            return true;
+        }
+    }
+
+    /**
+     *
+     * @param resID
+     * @param startTime
+     * @param endTime
+     * @param startDate
+     * @param endDate
+     */
+    public void editReservation (int resID , Date startDate, Date endDate)throws Exception{
+        String sdate = String.format("%s/%s/%s %s:%s:%s",startDate.getYear() , startDate.getMonth() , startDate.getDay() , startDate.getHours() ,startDate.getMinutes() ,startDate.getSeconds());
+        String edate = String.format("%s/%s/%s %s:%s:%s",endDate.getYear() , endDate.getMonth() , endDate.getDay() , endDate.getHours() ,endDate.getMinutes() ,endDate.getSeconds());
+        String ID = String.format("%s", resID);
+        Class.forName("com.mysql.jdbc.Driver");
+	Connection con = DriverManager.getConnection("jdbc:mysql://localhost/GarageSystem","root","");
+        Reservation r = new Reservation(resID, startDate, endDate , true);
+        double price = ManagerControl.getPriceOfSpot(true);
+        r.setProfit(price, true);
+        if(getFreeSpots(startDate , endDate).size()>=1){
+            String spotID = getFreeSpots(startDate , endDate).get(0);
+            PreparedStatement st = con.prepareStatement("update Reservation set startDate = ?,EndDate = ?,Profit = ? ,SpotID = ? where ResID = ?");
+            st.setString(1, sdate);
+            st.setString(2, edate);
+            st.setDouble(3, r.getProfit());
+            st.setString(4, spotID);
+            st.setInt(5, resID);
+            setDone(true);
+        }else{
+            setDone(false);
+        }
+    }
+
+    /**
+     *
+     * @param resID
+     */
+    public void cancelReservation (int resID)throws Exception{
+        String ID = String.format("%s", resID);
+        Class.forName("com.mysql.jdbc.Driver");
+	Connection con = DriverManager.getConnection("jdbc:mysql://localhost/GarageSystem","root","");
+        PreparedStatement st = con.prepareStatement("select PN from Reservation where ResID = '"+ID+"'");
+        ResultSet Result = st.executeQuery();
+        String PN = Result.getString("PN");
+        st = con.prepareStatement("delete from Cars where PN = '"+PN+"'");
+        st.execute();
+        st = con.prepareStatement("delete from Reservation where ResID = '"+ID+"'");
+        st.execute();
+        st = con.prepareStatement("select NumOfRes from Statistics");
+        Result = st.executeQuery();
+        int num = Integer.parseInt(Result.getString("NumOfRes")) ;
+        num--;
+        String sql = "update Statistics set NumOfRes = ?";
+        st = con.prepareStatement(sql);
+        st.setInt(1, num);
+        st.execute();
+    }
+}

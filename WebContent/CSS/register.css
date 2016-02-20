@@ -1,0 +1,64 @@
+body{
+	background-color: green;
+	z-index: -1;
+}
+header{
+	background-image: url("/MasterFace/pictures/masterLogo.ico");
+}
+p{
+	font-size: large;
+}
+div#notify{
+	padding: 0.5em 1em 0.5em 1em;
+	background-color: #fa2b05;
+	opacity: 0.5;
+	color: white;
+	margin: 0em 0.1em 0em 0.1em;
+	display: none;
+	border-radius: 5px;
+	border: solid thin black;
+	transition: 5s;
+}
+div#notify:HOVER{
+	border-radius: 50px;
+}
+input[type = "radio"]{
+	margin-right: 3em;
+}
+input{
+	border-radius: 4px;
+	height: 30px;
+	margin-top: 0.2em;
+	margin-bottom: 0.2em;
+	border: ridge;
+}
+input[type = "text"]{
+	font-size: large;
+	width: 410px;
+}
+input[name *= "tName"]{
+	font-size: large;
+	width: 200px;
+}
+input[type = "password"]{
+	font-size: x-large;
+	width: 410px;
+}
+input[name = "register"]:ACTIVE{
+	transform: translateY(0.4em);
+	border: inset;
+}
+input[name = "register"]:HOVER{
+	background-image: url("/MasterFace/pictures/s1.png");
+}
+input[name = "register"]{
+	width: 300px;
+	height: 50px;
+	text-align: center;
+	margin-top: 0.2em;
+	margin-bottom: 0.2em;
+	border: outset;
+	background-color: #ffff80;
+	background-image: url("/MasterFace/pictures/s.png");
+	box-shadow: 0 5px 5px 0 black, 0 5px 50px 0 black;
+}
